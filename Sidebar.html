@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <script>
+      function preventFormSubmit() {
+        var forms = document.querySelectorAll('form');
+        for (var i = 0; i < forms.length; i++) {
+          forms[i].addEventListener('submit', function(event) {
+            event.preventDefault();
+          });
+        }
+      }
+      window.addEventListener('load', preventFormSubmit);
+    </script>
+    <style>
+      li[onclick] {
+        cursor: pointer;
+      }
+      #list {
+        padding: 1px;
+        margin: 5px;
+      }
+      #list > li {
+        list-style-type: none;
+        margin: 10px;
+        padding: 2px;
+        border-width: 0 2px 1px 1px;
+        border-color: #00000015;
+        border-style: solid;
+      }
+      #list > li:hover {
+        position: relative;
+        top: 2px;
+        padding: 0 2px 1px 1px;
+        border-width: 2px 2px 2px 2px;
+        border-color: #00000050;
+      }
+      #list > li.loading {
+        border: none;
+      }
+      li.loading img.loading-image{
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 120px;
+          height: 120px;
+          margin:-60px 0 0 -60px;
+          -webkit-animation:spin 4s linear infinite;
+          -moz-animation:spin 4s linear infinite;
+          animation:spin 4s linear infinite;
+      }
+      @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+      @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+      @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+      li.error {
+        list-style-type: none;
+        border: none;
+        color: red;
+      }
+      input[type="submit"] {
+        width: 100%;
+        margin-top: 10px;
+      } 
+    </style>
+  </head>
+  <body>
+    <form id="myForm" onsubmit="updateLinks(this)">
+      <label for="layout-template">Section template: </label>
+      <select id="layout-template" name="layout-template">
+          <option value="" disabled selected>Loading ...</option>
+      </select>
+      <input type="submit" value="Find Slides" />
+      <ul id="list">
+      </ul>
+    </form>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    function getFriendlyItemNotFoundErrorMessage(item){
+      return 'Ooops, my deputy failed to find the '+item+'. No more chips for him!';
+    }
+    $(function() {
+        google.script.run.withSuccessHandler(showTemplates)
+          .withFailureHandler(showTemplatesFailure)
+          .getActivePresentationLayoutsData();
+    });
+    function showTemplates(layoutsData) {
+      var list = $('#layout-template');
+      list.empty();
+      for (i in layoutsData.displayNames) {
+        if (layoutsData.hasTitleBooleans[i]) {
+          list.append('<option value="'+ i + '">' + layoutsData.displayNames[i] + '</option>')
+        } else  {
+          list.append('<option value="'+ i + '" disabled>' + layoutsData.displayNames[i] + '</option>')
+        }
+      }
+    }
+    function showTemplatesFailure(error){
+      var div = document.getElementById('layout-template');
+      div.innerHTML = '<option class="error">'+getFriendlyItemNotFoundErrorMessage('layouts')+'</li>';
+    }
+
+    function updateLinks(FormData){
+      var list = $('#list');
+      list.empty();
+      list.append('<li class="loading"><img class="loading-image" src="https://fonts.gstatic.com/s/i/materialiconsround/rotate_right/v12/24px.svg" /></li>');
+      google.script.run
+          .withSuccessHandler(showLinks)
+          .withFailureHandler(showLinksFailure)
+          .getSlideIdsObjectsArray(FormData);
+    }
+    function showLinksFailure(error){
+      var div = document.getElementById('list');
+      div.innerHTML = '<li class="error">'+getFriendlyItemNotFoundErrorMessage('slides')+'</li>';
+    }
+    function showLinks(idsObjectArray) {
+      console.log(idsObjectArray);
+      console.log(idsObjectArray.length);
+      var list = $('#list');
+      list.empty();
+      for(i=0; i<idsObjectArray.length; i++){
+        list.append(
+          '<li onclick="setCurrentSlide(' +"'" + idsObjectArray[i].id +"'"+')">' +
+              idsObjectArray[i].position + ': '+ idsObjectArray[i].title +
+          '</li>'
+        );
+      }
+    }
+
+    function setCurrentSlide(slideId) {
+      google.script.run.setCurrentSlide(slideId)
+      .withFailureHandler(setCurrentSlideFailure);
+    }
+    function setCurrentSlideFailure(){
+      alert(getFriendlyItemNotFoundErrorMessage('slide'));
+    }
+  </script>
+  </body>
+</html>
