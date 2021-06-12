@@ -1,5 +1,5 @@
-# Google-Slides-Index-Sidebar
-A quick way to jump to sections of your slideshow
+# Index Sidebar
+A quick way to jump to sections of your Google slide
 
 Jump to sections of your slideshow.
 - Ensure a your sections use the same slide template and that has a title placeholder used as your section title
