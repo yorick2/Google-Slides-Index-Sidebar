@@ -29,15 +29,15 @@
         border-color: #00000015;
         border-style: solid;
       }
-      #list > li:hover {
+      #list li.plain {
+        border: none;
+      }
+      #list > li:not(.plain):hover {
         position: relative;
         top: 2px;
         padding: 0 2px 1px 1px;
         border-width: 2px 2px 2px 2px;
         border-color: #00000050;
-      }
-      #list > li.loading {
-        border: none;
       }
       li.loading img.loading-image{
           position: absolute;
@@ -62,6 +62,12 @@
         width: 100%;
         margin-top: 10px;
       } 
+      .ascii-art{
+        text-align: center;
+        width: 100%;
+        display: block;
+        font-size: xxx-large;
+      }
     </style>
   </head>
   <body>
@@ -74,36 +80,35 @@
       <ul id="list">
       </ul>
     </form>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>
     function getFriendlyItemNotFoundErrorMessage(item){
       return 'Ooops, my deputy failed to find the '+item+'. No more chips for him!';
     }
-    $(function() {
+    function customOnReady() {
         google.script.run.withSuccessHandler(showTemplates)
           .withFailureHandler(showTemplatesFailure)
           .getActivePresentationLayoutsData();
-    });
+    }
+    window.addEventListener('DOMContentLoaded', customOnReady);
     function showTemplates(layoutsData) {
-      var list = $('#layout-template');
-      list.empty();
+      let list = document.querySelector ('#layout-template');
+      list.innerHTML = '';
       for (i in layoutsData.displayNames) {
         if (layoutsData.hasTitleBooleans[i]) {
-          list.append('<option value="'+ i + '">' + layoutsData.displayNames[i] + '</option>')
+          list.innerHTML = list.innerHTML + '<option value="'+ i + '">' + layoutsData.displayNames[i] + '</option>';
         } else  {
-          list.append('<option value="'+ i + '" disabled>' + layoutsData.displayNames[i] + '</option>')
+          list.innerHTML = list.innerHTML + '<option value="'+ i + '" disabled>' + layoutsData.displayNames[i] + '</option>';
         }
       }
     }
     function showTemplatesFailure(error){
-      var div = document.getElementById('layout-template');
+      var div = document.querySelector ('#layout-template');
       div.innerHTML = '<option class="error">'+getFriendlyItemNotFoundErrorMessage('layouts')+'</li>';
     }
 
     function updateLinks(FormData){
-      var list = $('#list');
-      list.empty();
-      list.append('<li class="loading"><img class="loading-image" src="https://fonts.gstatic.com/s/i/materialiconsround/rotate_right/v12/24px.svg" /></li>');
+      var list = document.querySelector('#list');
+      list.innerHTML = '<li class="plain loading"><img class="loading-image" src="https://fonts.gstatic.com/s/i/materialiconsround/rotate_right/v12/24px.svg" /></li>';
       google.script.run
           .withSuccessHandler(showLinks)
           .withFailureHandler(showLinksFailure)
@@ -114,16 +119,13 @@
       div.innerHTML = '<li class="error">'+getFriendlyItemNotFoundErrorMessage('slides')+'</li>';
     }
     function showLinks(idsObjectArray) {
-      console.log(idsObjectArray);
-      console.log(idsObjectArray.length);
-      var list = $('#list');
-      list.empty();
+      var list = document.querySelector('#list');
+      list.innerHTML = '';
+      if(idsObjectArray.length == 0){
+        list.innerHTML ='<li class="plain"> <span class="ascii-art">(⌣́_⌣̀)</span><br/>Sorry, we could not find any slides that use the selected layout. Please try again. </li>'
+      }
       for(i=0; i<idsObjectArray.length; i++){
-        list.append(
-          '<li onclick="setCurrentSlide(' +"'" + idsObjectArray[i].id +"'"+')">' +
-              idsObjectArray[i].position + ': '+ idsObjectArray[i].title +
-          '</li>'
-        );
+        list.innerHTML = list.innerHTML + '<li onclick="setCurrentSlide(' +"'" + idsObjectArray[i].id +"'"+')">' + idsObjectArray[i].position + ': '+ idsObjectArray[i].title +'</li>';
       }
     }
 

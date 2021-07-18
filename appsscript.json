@@ -9,10 +9,12 @@
       }
     ]
   },
-  "exceptionLogging": "STACKDRIVER",
-  "oauthScopes": [
-    "https://www.googleapis.com/auth/script.container.ui",
-    "https://www.googleapis.com/auth/presentations.currentonly"
+  "oauthScopes": [ 
+   "https://www.googleapis.com/auth/userinfo.profile",
+   "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/presentations",
+    "https://www.googleapis.com/auth/script.container.ui"
   ],
+  "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8"
 }
